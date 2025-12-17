@@ -20,6 +20,7 @@ import {
   extractFormAnswers,
   getHubspotClient,
   hubspotmapper,
+  createHubspotContact,
 } from "../index.js";
 
 // async function webhookHandleFN(req, res) {
@@ -208,9 +209,11 @@ async function processWebhookAsync(payload) {
 
     console.log("Normalized Mapping :", normalized);
 
-    const client = await getHubspotClient();
+    // const client = await getHubspotClient();
 
-    const contact = await client.contacts.createContact(normalized);
+    // const contact = await client.contacts.createContact(normalized);
+
+    const contact = await createHubspotContact(normalized);
     logger.info(`Contacts: ${JSON.stringify(contact.length)}`);
   } catch (err) {
     // You MUST persist failed events for later reprocessing (DLQ). Replace with your store.

@@ -9,6 +9,8 @@ import { isDuplicate, saveStore, loadStore } from "./utils/eventStore.js";
 import { getFormAnswerGroup } from "./services/openloop.service.js";
 import { executeWithRetryAndThrottle } from "./utils/executeWithRetryAndThrottle.js";
 
+import { createHubspotContact } from "./services/hubspot.service.js";
+
 import {
   axiosInstance,
   hubspotClient,
@@ -42,6 +44,7 @@ import {
 // import {} from "";
 
 export {
+  createHubspotContact,
   getHubspotClient,
   cleanPropsExtended,
   cleanPropsDeep,
