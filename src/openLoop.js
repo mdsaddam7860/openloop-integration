@@ -13,7 +13,7 @@ async function serverInit() {
       logger.info(`Server running on PORT:${PORT}`);
     });
 
-    AsyncInit();
+    // AsyncInit();
   } catch (error) {
     logger.error("Server initialization failed:", error);
   }
@@ -24,7 +24,7 @@ serverInit();
 
 async function AsyncInit() {
   try {
-    await hubspotClient;
+    // await hubspotClient;
   } catch (error) {
     logger.error("Server initialization failed:", error);
   }
