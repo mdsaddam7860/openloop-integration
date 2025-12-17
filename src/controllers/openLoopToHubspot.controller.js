@@ -4,6 +4,7 @@ import {
   extractFormAnswers,
   hubspotmapper,
   getHubspotClient,
+  createHubspotContact,
 } from "../index.js";
 
 async function syncToHubspot() {
@@ -19,7 +20,7 @@ async function syncToHubspot() {
 
     console.log("Normalized Mapping :", normalized);
 
-    const client = await getHubspotClient();
+    // const client = await getHubspotClient();
 
     // const contact = await client.contacts.getAllContacts(); // [info] 17/12/2025, 1:35:39 pm - Contacts: 2933
 
@@ -33,15 +34,17 @@ async function syncToHubspot() {
     //   firstname: normalized.last_name,
     // });
 
-    try {
-      const contact = await client.contacts.upsertContactByEmail(
-        normalized.email,
-        normalized
-      );
-      logger.info(`Contact created: ${JSON.stringify(contact, null, 2)}`);
-    } catch (error) {
-      logger.error("Hubspot Contact sync failed:", error);
-    }
+    const contact = await createHubspotContact(normalized);
+    logger.info(`Contact created: ${JSON.stringify(contact, null, 2)}`);
+
+    // try {
+    //   const contact = await client.contacts.upsertContactByEmail(
+    //     normalized.email,
+    //     normalized
+    //   );
+    // } catch (error) {
+    //   logger.error("Hubspot Contact sync failed:", error);
+    // }
   } catch (error) {
     logger.error("Hubspot sync failed:", error);
   }

@@ -20,7 +20,7 @@ async function serverInit() {
 }
 
 serverInit();
-// syncToHubspot();
+syncToHubspot();
 
 async function AsyncInit() {
   try {
