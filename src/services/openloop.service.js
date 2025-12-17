@@ -10,13 +10,14 @@ async function getFormAnswerGroup(formAnswerGroupId) {
       return {};
     }
 
+    let url = "https://api.gethealthie.com/graphql";
+
     const body = {
       query: `
         query GetFormAnswerGroup($id: ID!) {
           formAnswerGroup(id: $id) {
             id
             name
-            user_id
             locked_at
             created_at
             form_answers {
@@ -37,17 +38,14 @@ async function getFormAnswerGroup(formAnswerGroupId) {
       payloadKeys: Object.keys(body),
     });
 
-    const response = await axios.post(
-      process.env.HEALTHIE_GRAPHQL_URL || "https://api.gethealthie.com/graphql",
-      body,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        timeout: 10000,
-      }
-    );
+    const response = await axios.post(url, body, {
+      headers: {
+        Authorization: `Basic ${process.env.OPENLOOP_API_KEY}`,
+        "Content-Type": "application/json",
+        AuthorizationSource: "API",
+      },
+      timeout: 10000,
+    });
 
     // if (response.data.errors) {
     //   logger.error("Healthie GraphQL errors", {

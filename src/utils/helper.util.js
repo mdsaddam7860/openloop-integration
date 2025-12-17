@@ -217,3 +217,44 @@ export {
   hmacSha256Base64,
   timingSafeEq,
 };
+
+// properties
+/*
+
+const properties = [
+      "firstname",
+      "lastname",
+      "weight",
+      "height_inches",
+      "bmi",
+      "basic_mwl_eligibility",
+      "height",
+      "gender",
+      "date_of_birth",
+      "age",
+      "sync_visit",
+      "state",
+      "medical_exclusion_criteria",
+      "prior_weight_loss_meds_use",
+      "other_exclusion_conditions",
+      "weight_related_comorbidity",
+      "medical_lifestyle_factors",
+      "firstname",
+      "lastname",
+      "email",
+      "product_id",
+      "price_id",
+      "product_name",
+      "price",
+      "price_currency",
+      "consent_tc",
+      "payment_completed",
+      "height_feet",
+      "comorbidity_required",
+      "phone",
+      "consent",
+      "product_image",
+      "shipping_name",
+      "stripe_subscription_id",
+    ];
+ */

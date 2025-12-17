@@ -1,4 +1,3 @@
-import { app } from "./app.js";
 import { logger } from "./utils/winston.logger.js";
 import {
   webhookHandleFN,
@@ -10,7 +9,11 @@ import { isDuplicate, saveStore, loadStore } from "./utils/eventStore.js";
 import { getFormAnswerGroup } from "./services/openloop.service.js";
 import { executeWithRetryAndThrottle } from "./utils/executeWithRetryAndThrottle.js";
 
-import { axiosInstance, hubspotClient } from "./configs/hubspot.config.js";
+import {
+  axiosInstance,
+  hubspotClient,
+  getHubspotClient,
+} from "./configs/hubspot.config.js";
 // import { hubspotClient } from "./utils/hubspotClient.js";
 import {
   isProbableBase64,
@@ -24,13 +27,34 @@ import {
   timingSafeEq,
 } from "./utils/helper.util.js";
 
+import { normalizeKey } from "./utils/normalizeKey.js";
+import { parseHtmlAnswer } from "./utils/parseHtmlAnswer.js";
+import { coerceValue } from "./utils/coerceValue.js";
+import { extractFormAnswers } from "./utils/extractFormAnswers.js";
+
+import syncToHubspot from "./controllers/openLoopToHubspot.controller.js";
+import {
+  hubspotmapper,
+  cleanProps,
+  cleanPropsExtended,
+  cleanPropsDeep,
+} from "./utils/hubspotMapper.util.js";
 // import {} from "";
 
 export {
-  app,
+  getHubspotClient,
+  cleanPropsExtended,
+  cleanPropsDeep,
+  syncToHubspot,
+  hubspotmapper,
+  cleanProps,
   logger,
   hubspotClient,
   axiosInstance,
+  normalizeKey,
+  extractFormAnswers,
+  coerceValue,
+  parseHtmlAnswer,
   webhookHandleFN,
   processWebhookAsync,
   retry,

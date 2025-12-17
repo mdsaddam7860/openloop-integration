@@ -16,6 +16,10 @@ import {
   hmacSha256Base64,
   timingSafeEq,
   getFormAnswerGroup,
+  executeWithRetryAndThrottle,
+  extractFormAnswers,
+  getHubspotClient,
+  hubspotmapper,
 } from "../index.js";
 
 // async function webhookHandleFN(req, res) {
@@ -137,13 +141,13 @@ async function webhookHandleFN(req, res) {
     }
 
     // 2) Throttle before outgoing calls
-    if (typeof throttle === "function") {
-      await throttle();
-    } else {
-      await _throttle(100); // basic fallback throttle
-    }
+    // if (typeof throttle === "function") {
+    //   await throttle();
+    // } else {
+    //   await _throttle(100); // basic fallback throttle
+    // }
 
-    // 3) Retry-protected processing
+    // 3) Retry-protected processing, Retry for entire webhook processing
     const retryFn =
       typeof retry === "function"
         ? (fn, opts) => retry(fn, opts)
@@ -174,71 +178,40 @@ async function processWebhookAsync(payload) {
   try {
     // Ensure API key exists
     if (!API_KEY) {
-      throw new Error("HEALTHIE_API_KEY not set");
+      logger.error("HEALTHIE_API_KEY not set");
+      return;
     }
-    // // Example: fetch tag details (replace query with real schema fields)
-    // const query = `
-    //   query GetTag($id: ID!) {
-    //     tag(id: $id) {
-    //       id
-    //       name
-    //       description
-    //     }
-    //   }
-    // `;
-    // const resp = await axios.post(
-    //   HEALTHIE_API,
-    //   { query, variables: { id: String(tagId) } },
-    //   {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization: `Basic ${API_KEY}`,
-    //       AuthorizationSource: "API",
-    //     },
-    //     timeout: 10000,
-    //   }
-    // );
-    // if (resp.status !== 200 || resp.data?.errors) {
-    //   logger.error("GraphQL call failed", {
-    //     status: resp.status,
-    //     errors: resp.data?.errors,
-    //   });
-    //   // push to DLQ / raise alert as needed
-    //   throw new Error("GraphQL request failed");
-    // }
-    // const tag = resp.data.data?.tag;
-    // // TODO: run your business logic here — map tag -> action, update DB, enqueue job, etc.
-    // // Example:
-    // logger.info(
-    //   `Processing applied_tag event ${eventType} for resource ${resourceId} tag ${tagId}`,
-    //   { tag }
-    // );
-    // // After successful processing, mark idempotency (if helper exists)
-    // if (typeof markProcessed === "function") {
-    //   await markProcessed(resourceId, eventType);
-    // } else {
-    //   logger.warn(
-    //     "markProcessed() not implemented. Consider persisting processed webhook id to prevent duplicates."
-    //   );
-    // }
 
     // Main logic for webhook handler
     // retrieve the full response set.
-    const result = await executeWithRetryAndThrottle(
+    const fromAnswer = await executeWithRetryAndThrottle(
       () =>
         getFormAnswerGroup({
           token,
-          formAnswerGroupId: 5606559,
+          formAnswerGroupId: resourceId,
         }),
       {
         retries: 4,
         context: {
           service: "healthie",
           operation: "GetFormAnswerGroup",
-          formAnswerGroupId: 5606559,
+          formAnswerGroupId: resourceId,
         },
       }
     );
+
+    let normalized = extractFormAnswers(fromAnswer);
+    // logger.info(`Normalized : ${JSON.stringify(normalized)}`);
+    console.log("Normalized Answers :", normalized);
+
+    normalized = hubspotmapper(normalized, resourceId);
+
+    console.log("Normalized Mapping :", normalized);
+
+    const client = await getHubspotClient();
+
+    const contact = await client.contacts.createContact(normalized);
+    logger.info(`Contacts: ${JSON.stringify(contact.length)}`);
   } catch (err) {
     // You MUST persist failed events for later reprocessing (DLQ). Replace with your store.
     logger.error("processWebhookAsync failed:", err);
