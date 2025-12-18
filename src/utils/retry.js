@@ -9,8 +9,13 @@ async function retry(fn, { retries = 3, delay = 500, factor = 2 } = {}) {
 
       if (attempt === retries) break;
 
-      const wait = delay * Math.pow(factor, attempt - 1);
-      await new Promise((res) => setTimeout(res, wait));
+      // Exponential backoff
+      const baseDelay = delay * Math.pow(factor, attempt - 1);
+
+      // ✅ Full jitter: random delay between 0 and baseDelay
+      const jitteredDelay = Math.random() * baseDelay;
+
+      await new Promise((res) => setTimeout(res, jitteredDelay));
     }
   }
 

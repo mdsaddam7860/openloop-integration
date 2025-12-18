@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { logger } from "../index.js";
 function timingSafeEq(a, b) {
   try {
     const A = Buffer.from(String(a));
