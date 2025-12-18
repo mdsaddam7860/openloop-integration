@@ -2,7 +2,7 @@
 // dotenv.config();
 import "dotenv/config";
 
-// import { createClient } from "@mohammadsaddam-dev/hubspot-toolkit";
+import { createClient } from "@mohammadsaddam-dev/hubspot-toolkit";
 import axios from "axios";
 import { logger } from "../utils/winston.logger.js";
 

@@ -17,10 +17,11 @@
   "license": "MIT",
   "description": "",
   "dependencies": {
+    "@mohammadsaddam-dev/hubspot-toolkit": "^0.2.65",
     "axios": "^1.13.2",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "jsdom": "^27.3.0",
+    "jsdom": "22.1.0",
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0"
   }

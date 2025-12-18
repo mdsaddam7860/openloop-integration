@@ -141,6 +141,8 @@ async function webhookHandleFN(req, res) {
       );
     }
 
+    await processWebhookAsync(payload);
+
     // 2) Throttle before outgoing calls
     // if (typeof throttle === "function") {
     //   await throttle();
@@ -149,17 +151,17 @@ async function webhookHandleFN(req, res) {
     // }
 
     // 3) Retry-protected processing, Retry for entire webhook processing
-    const retryFn =
-      typeof retry === "function"
-        ? (fn, opts) => retry(fn, opts)
-        : (fn, opts) => _retry(fn, opts);
+    // const retryFn =
+    //   typeof retry === "function"
+    //     ? (fn, opts) => retry(fn, opts)
+    //     : (fn, opts) => _retry(fn, opts);
 
-    await retryFn(
-      async () => {
-        await processWebhookAsync(payload);
-      },
-      { retries: 4, delay: 500, factor: 2 }
-    );
+    // await retryFn(
+    //   async () => {
+    //     await processWebhookAsync(payload);
+    //   },
+    //   { retries: 4, delay: 500, factor: 2 }
+    // );
   } catch (error) {
     // If we failed before ACK, send 500; after ACK we already returned 200 so can't change client response.
     logger.error("Webhook handler threw:", error);
@@ -186,13 +188,9 @@ async function processWebhookAsync(payload) {
     // Main logic for webhook handler
     // retrieve the full response set.
     const fromAnswer = await executeWithRetryAndThrottle(
-      () =>
-        getFormAnswerGroup({
-          token,
-          formAnswerGroupId: resourceId,
-        }),
+      () => getFormAnswerGroup(resourceId),
       {
-        retries: 4,
+        retries: 3,
         context: {
           service: "healthie",
           operation: "GetFormAnswerGroup",
@@ -201,25 +199,41 @@ async function processWebhookAsync(payload) {
       }
     );
 
-    let normalized = extractFormAnswers(fromAnswer);
+    let normalized = await executeWithRetryAndThrottle(() => {
+      extractFormAnswers(fromAnswer),
+        {
+          retries: 3,
+          context: {
+            service:
+              "extractFormAnswers from Healthie Response using jsdom module",
+            operation: "extractFormAnswers",
+            formAnswerGroupId: resourceId,
+          },
+        };
+    });
+
+    // let normalized = extractFormAnswers(fromAnswer);
     // logger.info(`Normalized : ${JSON.stringify(normalized)}`);
     console.log("Normalized Answers :", normalized);
 
-    normalized = hubspotmapper(normalized, resourceId);
+    const payload = hubspotmapper(normalized, resourceId);
 
-    console.log("Normalized Mapping :", normalized);
+    console.log("payload Mapping :", payload);
 
-    // const client = await getHubspotClient();
+    const client = await getHubspotClient();
 
-    // const contact = await client.contacts.createContact(normalized);
-
-    const contact = await createHubspotContact(normalized);
-    logger.info(`Contacts: ${JSON.stringify(contact.length)}`);
+    if (payload.email && payload) {
+      const contact = await client.contacts.upsertContactByEmail(
+        payload.email,
+        payload
+      );
+      logger.info(`Contact created: ${JSON.stringify(contact, null, 2)}`);
+    }
   } catch (err) {
     // You MUST persist failed events for later reprocessing (DLQ). Replace with your store.
     logger.error("processWebhookAsync failed:", err);
     // optional: await storeFailedWebhook(payload, err);
-    throw err; // let caller's retry logic handle it
+    // throw err; // let caller's retry logic handle it
   }
 }
 

@@ -2,8 +2,8 @@ import "dotenv/config";
 // import dotenv from "dotenv";
 // dotenv.config();
 import { app } from "./app.js";
-import { syncToHubspot, logger } from "./index.js";
-import { getHubspotClient, hubspotClient } from "./configs/hubspot.config.js";
+import { logger, syncToHubspot } from "./index.js";
+import { hubspotClient } from "./configs/hubspot.config.js";
 
 async function serverInit() {
   try {
@@ -13,18 +13,18 @@ async function serverInit() {
       logger.info(`Server running on PORT:${PORT}`);
     });
 
-    // AsyncInit();
+    AsyncInit();
   } catch (error) {
     logger.error("Server initialization failed:", error);
   }
 }
 
 serverInit();
-// syncToHubspot();
+syncToHubspot();
 
 async function AsyncInit() {
   try {
-    // await hubspotClient;
+    await hubspotClient;
   } catch (error) {
     logger.error("Server initialization failed:", error);
   }

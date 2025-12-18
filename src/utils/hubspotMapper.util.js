@@ -67,7 +67,7 @@ function cleanPropsDeep(obj = {}) {
 }
 function hubspotmapper(data, resourceId) {
   const buildRequest = {
-    sourceid: data.resourceId,
+    sourceid: resourceId,
     firstname: data.first_name,
     lastname: data.last_name,
     email: data.email,

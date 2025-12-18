@@ -17,6 +17,8 @@ app.post(
   webhookHandleFN
 );
 
+// Webhook url :- https://phpstack-1418358-6064950.cloudwaysapps.com/healthie/webhook
+
 // endpoints or url fro application can be added here
 
 export { app };

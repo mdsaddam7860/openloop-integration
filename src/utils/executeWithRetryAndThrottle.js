@@ -13,44 +13,53 @@ async function executeWithRetryAndThrottle(
     context = {},
   } = {}
 ) {
-  try {
-    await throttle();
+  let attempt = 0;
 
-    return await retry(
-      async () => {
-        try {
-          logger.debug("Executing outbound operation", context);
-          return await fn();
-        } catch (error) {
-          const status = error.response?.status;
+  return retry(
+    async () => {
+      attempt++;
 
-          logger.warn("Outbound operation failed", {
+      // 👇 throttle ONLY on retries
+      if (attempt > 1) {
+        await throttle();
+      }
+
+      try {
+        logger.debug("Executing outbound operation", {
+          ...context,
+          attempt,
+        });
+        return await fn();
+      } catch (error) {
+        const status = error.response?.status;
+        const code = error.code;
+
+        logger.warn("Outbound operation failed", {
+          ...context,
+          attempt,
+          status,
+          code,
+          message: error.message,
+        });
+
+        const retryable =
+          retryOnStatuses.includes(status) ||
+          ["ECONNRESET", "ETIMEDOUT", "ENOTFOUND"].includes(code);
+
+        if (!retryable) {
+          logger.error("Non-retryable error", {
             ...context,
             status,
-            message: error.message,
+            code,
           });
-
-          // Decide if retryable
-          if (status && !retryOnStatuses.includes(status)) {
-            logger.error("Non-retryable error encountered", {
-              ...context,
-              status,
-            });
-            throw error; // breaks retry loop
-          }
-
-          throw error; // retryable
+          throw error;
         }
-      },
-      { retries, delay, factor }
-    );
-  } catch (error) {
-    logger.error("Operation failed after retries", {
-      ...context,
-      message: error.message,
-    });
-    throw error;
-  }
+
+        throw error; // retry
+      }
+    },
+    { retries, delay, factor }
+  );
 }
 
 export { executeWithRetryAndThrottle };
