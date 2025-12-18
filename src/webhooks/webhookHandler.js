@@ -128,18 +128,18 @@ async function webhookHandleFN(req, res) {
     }
 
     // 1) Idempotency check: isDuplicate() must be implemented by you (DB/redis). If missing, fallback to no-dup check (not recommended).
-    if (typeof isDuplicate === "function") {
-      const dup = isDuplicate(resourceId, eventType);
+    // if (typeof isDuplicate === "function") {
+    //   const dup = isDuplicate(resourceId, eventType);
 
-      if (dup) {
-        logger.info(`Skipping duplicate webhook: ${resourceId} (${eventType})`);
-        return;
-      }
-    } else {
-      logger.warn(
-        "isDuplicate() not implemented — running without idempotency"
-      );
-    }
+    //   if (dup) {
+    //     logger.info(`Skipping duplicate webhook: ${resourceId} (${eventType})`);
+    //     return;
+    //   }
+    // } else {
+    //   logger.warn(
+    //     "isDuplicate() not implemented — running without idempotency"
+    //   );
+    // }
 
     await processWebhookAsync(payload);
 
@@ -180,10 +180,10 @@ async function processWebhookAsync(payload) {
 
   try {
     // Ensure API key exists
-    if (!API_KEY) {
-      logger.error("HEALTHIE_API_KEY not set");
-      return;
-    }
+    // if (!API_KEY) {
+    //   logger.error("HEALTHIE_API_KEY not set");
+    //   return;
+    // }
 
     // Main logic for webhook handler
     // retrieve the full response set.
@@ -199,18 +199,20 @@ async function processWebhookAsync(payload) {
       }
     );
 
-    let normalized = await executeWithRetryAndThrottle(() => {
-      extractFormAnswers(fromAnswer),
-        {
-          retries: 3,
-          context: {
-            service:
-              "extractFormAnswers from Healthie Response using jsdom module",
-            operation: "extractFormAnswers",
-            formAnswerGroupId: resourceId,
-          },
-        };
-    });
+    // let normalized = await executeWithRetryAndThrottle(() => {
+    //   extractFormAnswers(fromAnswer),
+    //     {
+    //       retries: 3,
+    //       context: {
+    //         service:
+    //           "extractFormAnswers from Healthie Response using jsdom module",
+    //         operation: "extractFormAnswers",
+    //         formAnswerGroupId: resourceId,
+    //       },
+    //     };
+    // });
+
+    let normalized = extractFormAnswers(fromAnswer);
 
     // let normalized = extractFormAnswers(fromAnswer);
     // logger.info(`Normalized : ${JSON.stringify(normalized)}`);
