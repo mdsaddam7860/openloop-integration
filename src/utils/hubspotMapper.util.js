@@ -65,6 +65,10 @@ function cleanPropsDeep(obj = {}) {
 
   return obj;
 }
+function mapArrayToFlatString(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) return null;
+  return arr.filter(Boolean).map(String).join(",");
+}
 function hubspotmapper(data, resourceId) {
   const buildRequest = {
     sourceid: resourceId,
@@ -77,20 +81,26 @@ function hubspotmapper(data, resourceId) {
     date_of_birth: data.date_of_birth,
     bmi: data.bmi,
     state: data.state,
-    phone: data.phone,
+    // phone: data.phone,
     eligible_for_medical_weight_loss: data.basic_mwl_eligibility,
     full_name: data.shipping_name,
-    choose_your_treatment_plan: data.product_name,
-    top_wellness_goal: data.sync_visit_reason,
+
+    top_wellness_goal_: data.sync_visit_reason, // Enum field
     picture_of_your_current_glp1_medication_pen_or_vial: data.product_image,
 
-    // TODO: Update didnt work throwing 400
-    more_about_your_health_: data.medical_lifestyle_factors[0], // throwing 400
+    more_about_your_health_: mapArrayToFlatString(
+      data.medical_lifestyle_factors
+    ),
 
-    do_these_apply_to_you: data.other_exclusion_conditions[0], //throwing 400
-    symptoms_: data.medical_exclusion_criteria[0], // throwing 400
+    do_these_apply_to_you: mapArrayToFlatString(
+      data.other_exclusion_conditions
+    ),
+    symptoms_: mapArrayToFlatString(data.medical_exclusion_criteria),
+    choose_your_treatment_plan_: data.product_name,
+
+    // TODO: Update didnt work throwing 400
     // jc_incoming_sms_count: data.consent_tc, // throwing 400
-    //formulation_options_ : data.
+    //formulation_options_ : data.product_id
     // TODO: Update didnt work throwing 400
 
     // throwing 400
@@ -110,6 +120,9 @@ function hubspotmapper(data, resourceId) {
     // comorbidity_required: data.comorbidity_required,
     // consent: data.consent,
     // stripe_subscription_id: data.stripe_subscription_id,
+
+    // choose_your_treatment_plan: data.product_name, // throwing error // TODO remove
+    /* Hubspot Contact sync failed1: Property values were not valid: [{"isValid":false,"message":"Weekly Dual Power Personalized Tirzepatide (GLP-1/GIP) Injection was not one of the allowed options: [Weekly Dual Power (GLP-1 / GIP Injection - Tirzepatide), Zepbound (Tirzepatide), Daily Reset (GLP-1 Oral - Semaglutide), Daily Dual Power (GLP-1 / GIP Oral - Tirzepatide), Ozempic (Semaglutide), Weekly Reset - (GLP-1 Injection - Semaglutide)]","error":"INVALID_OPTION","name":"choose_your_treatment_plan"}] */
   };
 
   //starting_weight_in_pounds

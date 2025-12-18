@@ -225,13 +225,21 @@ async function processWebhookAsync(payload) {
     const client = await getHubspotClient();
 
     if (payload.email && payload) {
-      const contact = await client.contacts.upsertContactByEmail(
-        payload.email,
-        payload
-      );
-      logger.info(
-        `Contact created/Updated if exists: ${JSON.stringify(contact, null, 2)}`
-      );
+      try {
+        const contact = await client.contacts.upsertContactByEmail(
+          payload.email,
+          payload
+        );
+        logger.info(
+          `Contact created/Updated if exists: ${JSON.stringify(
+            contact,
+            null,
+            2
+          )}`
+        );
+      } catch (error) {
+        logger.error("Error creating/updating contact:", error.response?.data);
+      }
     }
   } catch (err) {
     // You MUST persist failed events for later reprocessing (DLQ). Replace with your store.

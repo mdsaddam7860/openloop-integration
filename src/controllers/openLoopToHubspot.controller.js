@@ -11,7 +11,7 @@ async function syncToHubspot() {
   if (process.env.NODE_ENV !== "development") return;
 
   try {
-    const fromAnswer = await getFormAnswerGroup(56815705);
+    const fromAnswer = await getFormAnswerGroup(57468647);
     // logger.info(`fromAnswer: ${JSON.stringify(fromAnswer)}`);
 
     let normalized = extractFormAnswers(fromAnswer);
@@ -45,7 +45,12 @@ async function syncToHubspot() {
       );
       logger.info(`Contact created: ${JSON.stringify(contact, null, 2)}`);
     } catch (error) {
-      logger.error("Hubspot Contact sync failed:", error);
+      logger.error(
+        "Hubspot Contact sync failed1:",
+        error.response?.data || error
+      );
+      // logger.error("Hubspot Contact sync failed2:", error.response?.status);
+      // logger.error("Hubspot Contact sync failed3:", error.response?.message);
     }
   } catch (error) {
     logger.error("Hubspot sync failed:", error);

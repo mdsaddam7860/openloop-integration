@@ -96,6 +96,7 @@ out
 dist
 junk.js
 junk.json
+webhook-events.json
 
 # Gatsby files
 .cache/
