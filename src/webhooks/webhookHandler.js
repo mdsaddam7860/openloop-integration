@@ -229,7 +229,9 @@ async function processWebhookAsync(payload) {
         payload.email,
         payload
       );
-      logger.info(`Contact created: ${JSON.stringify(contact, null, 2)}`);
+      logger.info(
+        `Contact created/Updated if exists: ${JSON.stringify(contact, null, 2)}`
+      );
     }
   } catch (err) {
     // You MUST persist failed events for later reprocessing (DLQ). Replace with your store.
